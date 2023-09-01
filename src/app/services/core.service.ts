@@ -1,12 +1,19 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { lastValueFrom } from 'rxjs';
+import { BehaviorSubject, lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CoreService {
+  private refreshAttendance: BehaviorSubject<any> = new BehaviorSubject<any>(null)
+  public refreshAttendanceObservable = this.refreshAttendance.asObservable()
+
   constructor(private http: HttpClient) {}
+
+  refreshAttendanceData() {
+    this.refreshAttendance.next(true)
+  }
 
   getFromApi = <T>(url: string, params?: string): Promise<any> => {
     return lastValueFrom(this.http.get<T>(url + (params || '')));

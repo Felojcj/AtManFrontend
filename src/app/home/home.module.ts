@@ -10,6 +10,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import {
   NgxMatDatetimePickerModule,
@@ -17,12 +18,14 @@ import {
   NgxMatTimepickerModule,
 } from '@angular-material-components/datetime-picker';
 import { MatButtonModule } from '@angular/material/button';
+import { ActionsButtonsComponent } from './components/tracking-table/actions-buttons/actions-buttons.component';
 
 @NgModule({
   declarations: [
     HomeComponent,
     TrackingTableComponent,
     AttendanceModalComponent,
+    ActionsButtonsComponent,
   ],
   imports: [
     CommonModule,
@@ -38,6 +41,7 @@ import { MatButtonModule } from '@angular/material/button';
     NgxMatTimepickerModule,
     NgxMatNativeDateModule,
     MatButtonModule,
+    MatIconModule
   ],
   providers: [DatePipe],
 })

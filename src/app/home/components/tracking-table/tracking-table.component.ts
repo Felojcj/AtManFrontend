@@ -1,9 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ColDef } from 'ag-grid-community';
+import { ColDef, ICellRendererParams } from 'ag-grid-community';
 import { CoreService } from 'src/app/services/core.service';
 import { AttendanceModalComponent } from '../attendance-modal/attendance-modal.component';
+import { ActionsButtonsComponent } from './actions-buttons/actions-buttons.component';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-tracking-table',
@@ -13,6 +15,7 @@ import { AttendanceModalComponent } from '../attendance-modal/attendance-modal.c
 export class TrackingTableComponent {
   attendanceData: any[] = [];
   modalData!: any;
+  destroy: Subject<void> = new Subject<void>();
 
   constructor(
     private attendanceService: CoreService,
@@ -21,20 +24,52 @@ export class TrackingTableComponent {
   ) {}
 
   ngOnInit(): void {
-    this.attendanceService
-      .getFromApi('https://localhost:7248/api/Attendances')
-      .then((values) => {
-        this.attendanceData = this.formatAttendanceData(values);
-      })
-      .catch((error) => console.log(error));
+    this.attendanceService.refreshAttendanceObservable
+      .pipe(takeUntil(this.destroy))
+      .subscribe(() => {
+        this.getAttendanceData();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
+    this.destroy.complete();
   }
 
   columnDefs: ColDef[] = [
     { field: 'name', headerName: 'Assistant Name' },
-    { field: 'startDate', headerName: 'Start Date' },
-    { field: 'endDate', headerName: 'End Date' },
+    {
+      field: 'startDate',
+      headerName: 'Start Date',
+      sortingOrder: ['asc', 'desc'],
+      sortable: true,
+      cellRenderer: (params: ICellRendererParams) => {
+        return params.value
+          ? `<span>${this.datePipe.transform(
+              params.value,
+              'MMMM dd, yyyy, HH:mm'
+            )}</span>`
+          : null;
+      },
+    },
+    {
+      field: 'endDate',
+      headerName: 'End Date',
+      cellRenderer: (params: ICellRendererParams) => {
+        return params.value
+          ? `
+      <span>
+      ${this.datePipe.transform(params.value, 'MMMM dd, yyyy, HH:mm')}
+      </span>
+      `
+          : null;
+      },
+    },
     { field: 'workedHours', headerName: 'Worked Hours' },
-    { headerName: 'Actions' },
+    {
+      headerName: 'Actions',
+      cellRenderer: ActionsButtonsComponent,
+    },
   ];
 
   calculateWorkingHours(startDateString: string, endDateString: string) {
@@ -62,14 +97,8 @@ export class TrackingTableComponent {
       return {
         ...data,
         workedHours: this.calculateWorkingHours(startDate, endDate),
-        startDate: this.datePipe.transform(
-          new Date(startDate),
-          'MMMM dd, yyyy, HH:mm'
-        ),
-        endDate: this.datePipe.transform(
-          new Date(endDate),
-          'MMMM dd, yyyy, HH:mm'
-        ),
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
       };
     });
   }
@@ -93,7 +122,16 @@ export class TrackingTableComponent {
   sendAttendanceData() {
     this.attendanceService
       .postToApi('https://localhost:7248/api/Attendances', this.modalData)
-      .then(() => console.log("res"))
+      .then(() => this.getAttendanceData())
+      .catch((error) => console.log(error));
+  }
+
+  getAttendanceData() {
+    this.attendanceService
+      .getFromApi('https://localhost:7248/api/Attendances')
+      .then((values) => {
+        this.attendanceData = this.formatAttendanceData(values);
+      })
       .catch((error) => console.log(error));
   }
 }
