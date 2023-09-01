@@ -12,6 +12,7 @@ import { AttendanceModalComponent } from '../attendance-modal/attendance-modal.c
 })
 export class TrackingTableComponent {
   attendanceData: any[] = [];
+  modalData!: any;
 
   constructor(
     private attendanceService: CoreService,
@@ -24,7 +25,6 @@ export class TrackingTableComponent {
       .getFromApi('https://localhost:7248/api/Attendances')
       .then((values) => {
         this.attendanceData = this.formatAttendanceData(values);
-        console.log(this.attendanceData);
       })
       .catch((error) => console.log(error));
   }
@@ -57,13 +57,19 @@ export class TrackingTableComponent {
 
   formatAttendanceData(attendanceData: any[]) {
     return attendanceData.map((data) => {
-      const startDate = data.startDate
-      const endDate = data.endDate
+      const startDate = data.startDate;
+      const endDate = data.endDate;
       return {
         ...data,
         workedHours: this.calculateWorkingHours(startDate, endDate),
-        startDate: this.datePipe.transform(new Date(startDate), 'MMMM dd, yyyy, HH:mm'),
-        endDate: this.datePipe.transform(new Date(endDate), 'MMMM dd, yyyy, HH:mm'),
+        startDate: this.datePipe.transform(
+          new Date(startDate),
+          'MMMM dd, yyyy, HH:mm'
+        ),
+        endDate: this.datePipe.transform(
+          new Date(endDate),
+          'MMMM dd, yyyy, HH:mm'
+        ),
       };
     });
   }
@@ -71,19 +77,23 @@ export class TrackingTableComponent {
   openAttendanceModal() {
     const modalRef = this.modalService.open(AttendanceModalComponent, {
       centered: true,
-      size: "lg",
-      backdrop: "static",
-      windowClass: "window-modal",
-      backdropClass: "backdrop-modal"
-    })
-    modalRef.result.then(data => {
+      size: 'lg',
+      backdrop: 'static',
+      windowClass: 'window-modal',
+      backdropClass: 'backdrop-modal',
+    });
+    modalRef.result.then((data) => {
       if (data) {
-        console.log(data)
+        this.modalData = data;
+        this.sendAttendanceData();
       }
-    })
+    });
   }
 
   sendAttendanceData() {
-
+    this.attendanceService
+      .postToApi('https://localhost:7248/api/Attendances', this.modalData)
+      .then(() => console.log("res"))
+      .catch((error) => console.log(error));
   }
 }
