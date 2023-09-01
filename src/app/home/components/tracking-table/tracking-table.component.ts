@@ -1,7 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ColDef } from 'ag-grid-community';
 import { CoreService } from 'src/app/services/core.service';
+import { AttendanceModalComponent } from '../attendance-modal/attendance-modal.component';
 
 @Component({
   selector: 'app-tracking-table',
@@ -13,7 +15,8 @@ export class TrackingTableComponent {
 
   constructor(
     private attendanceService: CoreService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -63,5 +66,24 @@ export class TrackingTableComponent {
         endDate: this.datePipe.transform(new Date(endDate), 'MMMM dd, yyyy, HH:mm'),
       };
     });
+  }
+
+  openAttendanceModal() {
+    const modalRef = this.modalService.open(AttendanceModalComponent, {
+      centered: true,
+      size: "lg",
+      backdrop: "static",
+      windowClass: "window-modal",
+      backdropClass: "backdrop-modal"
+    })
+    modalRef.result.then(data => {
+      if (data) {
+        console.log(data)
+      }
+    })
+  }
+
+  sendAttendanceData() {
+
   }
 }

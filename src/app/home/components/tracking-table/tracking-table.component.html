@@ -1,6 +1,11 @@
+<div class="icon-container">
+  <h3>Attendance</h3>
+  <span class="material-symbols-outlined icon" (click)="openAttendanceModal()"> add </span>
+</div>
 <ag-grid-angular
-    style="width: 1000px; height: 350px;"
-    class="ag-theme-alpine"
-    [rowData]="attendanceData"
-    [columnDefs]="columnDefs">
+  style="width: 1000px; height: 350px"
+  class="ag-theme-alpine"
+  [rowData]="attendanceData"
+  [columnDefs]="columnDefs"
+>
 </ag-grid-angular>

@@ -3,17 +3,21 @@ import { Injectable } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CoreService {
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
+  getFromApi = <T>(url: string, params?: string): Promise<any> => {
+    return lastValueFrom(this.http.get<T>(url + (params || '')));
+  };
 
-  getFromApi = <T>(url: string, params?: string) : Promise<any> => {
-    return lastValueFrom(this.http.get<T>(url + (params || '')))
-  }
-
-  //For post     // const headers = new HttpHeaders({
-    //   "content-type": "appl..."
-    // })
+  postToApi = <T>(url: string, body: any, params?: string): Promise<any> => {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    return lastValueFrom(
+      this.http.post<T>(url + (params || ''), body, { headers })
+    );
+  };
 }
